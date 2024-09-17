@@ -5,6 +5,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let sites = JSON.parse(localStorage.getItem('pingedSites')) || [];
 
+    // Ajouter https://google.com comme exemple si aucun site n'est enregistré
+    if (sites.length === 0) {
+        sites.push({
+            url: 'https://google.com',
+            status: 200,
+            pingTime: '100ms',
+            timestamp: Date.now(),
+            favorite: false
+        });
+        localStorage.setItem('pingedSites', JSON.stringify(sites));
+    }
+
     function getStatusColor(status) {
         if (status >= 200 && status < 300) return 'text-green-500';
         if (status >= 300 && status < 400) return 'text-yellow-500';
@@ -15,27 +27,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateUI() {
         resultsList.innerHTML = '';
+        // Trier les sites du plus récent au plus ancien
+        sites.sort((a, b) => b.timestamp - a.timestamp);
         sites.forEach((site, index) => {
             const siteElement = document.createElement('div');
             siteElement.className = 'bg-gray-800 p-6 rounded-lg shadow-lg mb-4';
-            siteElement.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">${site.url}</h3>
-                    <div>
-                        <button class="reping-btn text-accent hover:text-accent-light mr-2" data-index="${index}">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                        <button class="favorite-btn text-yellow-500 hover:text-yellow-300 mr-2" data-index="${index}">
-                            <i class="fas ${site.favorite ? 'fa-star' : 'fa-star-o'}"></i>
-                        </button>
+            
+            if (site.error) {
+                siteElement.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">${site.url}</h3>
                         <button class="delete-btn text-red-500 hover:text-red-300" data-index="${index}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
-                </div>
-                <p class="mb-2">Status: <span class="${getStatusColor(site.status)}">${site.status}</span></p>
-                <p class="mb-2">Ping Time: <span class="bg-accent text-white px-2 py-1 rounded-full text-sm">${site.pingTime}</span></p>
-            `;
+                    <p class="text-red-500">Erreur: Impossible de pinger le site</p>
+                `;
+            } else {
+                siteElement.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">${site.url}</h3>
+                        <div>
+                            <button class="reping-btn text-accent hover:text-accent-light mr-2" data-index="${index}">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="favorite-btn text-yellow-500 hover:text-yellow-300 mr-2" data-index="${index}">
+                                <i class="fas ${site.favorite ? 'fa-star' : 'fa-star-o'}"></i>
+                            </button>
+                            <button class="delete-btn text-red-500 hover:text-red-300" data-index="${index}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="mb-2">Status: <span class="${getStatusColor(site.status)}">${site.status}</span></p>
+                    <p class="mb-2">Ping Time: <span class="bg-accent text-white px-2 py-1 rounded-full text-sm">${site.pingTime}</span></p>
+                `;
+            }
             resultsList.appendChild(siteElement);
         });
 
@@ -53,7 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     pingForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const url = urlInput.value;
+        let url = urlInput.value.trim();
+        
+        // Ajouter automatiquement https:// si nécessaire
+        if (!/^https?:\/\//i.test(url)) {
+            url = 'https://' + url;
+        }
+
         try {
             const response = await fetch('/ping', {
                 method: 'POST',
@@ -63,7 +96,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ url }),
             });
             const data = await response.json();
-            sites.push({ url, ...data, favorite: false });
+            if (data.error) {
+                sites.unshift({
+                    url,
+                    error: true,
+                    timestamp: Date.now(),
+                    favorite: false
+                });
+            } else {
+                sites.unshift({
+                    url,
+                    ...data,
+                    timestamp: Date.now(),
+                    favorite: false
+                });
+            }
             localStorage.setItem('pingedSites', JSON.stringify(sites));
             updateUI();
             urlInput.value = '';
@@ -83,7 +130,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ url: site.url }),
             });
             const data = await response.json();
-            sites[index] = { ...site, ...data };
+            if (data.error) {
+                sites[index] = {
+                    ...site,
+                    error: true,
+                    timestamp: Date.now()
+                };
+            } else {
+                sites[index] = {
+                    ...site,
+                    ...data,
+                    error: false,
+                    timestamp: Date.now()
+                };
+            }
             localStorage.setItem('pingedSites', JSON.stringify(sites));
             updateUI();
         } catch (error) {
