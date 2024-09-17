@@ -1,5 +1,5 @@
-# Use an official Node runtime as the parent image
-FROM node:14
+# Use a more recent Node runtime as the parent image
+FROM node:16
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Build the Tailwind CSS
-RUN npm run build:css
+RUN npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/styles.css --minify
 
 # Make port 17432 available to the world outside this container
 EXPOSE 17432
