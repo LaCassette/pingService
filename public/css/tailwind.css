@@ -1,0 +1,14 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom styles */
+body {
+    background-color: #1a202c;
+}
+
+.text-green-500 {}
+.text-yellow-500 {}
+.text-orange-500 {}
+.text-red-500 {}
+.text-gray-500 {}

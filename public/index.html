@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Pinger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css"> 
+</head>
+<body class="bg-gray-900 text-white font-sans flex flex-col min-h-screen">
+    <div class="container mx-auto px-4 py-8 flex-grow">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-3xl font-bold mb-6 text-center">Website Pinger</h1>
+            <form id="pingForm" class="mb-8">
+                <input type="url" id="urlInput" placeholder="Enter website URL" required
+                       class="w-full p-2 mb-2 bg-gray-800 border border-gray-700 rounded">
+                <button type="submit" class="w-full bg-accent hover:bg-accent-dark text-white font-bold py-2 px-4 rounded">
+                    Ping Website
+                </button>
+            </form>
+            <div id="resultsList" class="space-y-4"></div>
+        </div>
+    </div>
+    <footer class="bg-gray-800 py-4 text-center text-sm">
+        Developed with Claude AI in 1.5 hours
+    </footer>
+    <script src="js/script.js"></script>
+</body>
+</html>
